@@ -7,7 +7,7 @@ namespace YiluTech\ApiDocGenerator;
 use Illuminate\Support\ServiceProvider;
 use YiluTech\ApiDocGenerator\Commands\ApiDocGenerateCommand;
 
-class ApiDocGeneratorProvider extends ServiceProvider
+class ApiDocGeneratorServiceProvider extends ServiceProvider
 {
     public function boot()
     {

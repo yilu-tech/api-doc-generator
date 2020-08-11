@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 use YiluTech\ApiDocGenerator\ApiDocGenerator;
-use YiluTech\ApiDocGenerator\ApiDocGeneratorProvider;
+use YiluTech\ApiDocGenerator\ApiDocGeneratorServiceProvider;
 
 class RouteParserTest extends TestCase
 {
@@ -16,7 +16,7 @@ class RouteParserTest extends TestCase
 
     protected function getPackageProviders($app)
     {
-        return [ApiDocGeneratorProvider::class];
+        return [ApiDocGeneratorServiceProvider::class];
     }
 
     public function testPublishConfig()

@@ -46,7 +46,7 @@ class ApiDocGenerateCommand extends Command
             file_put_contents($path, $parser->toJson());
         }
 
-        $this->info('');
+        $this->info(sprintf('generate success, in path: %s', $path));
     }
 
     protected function getFileType()
