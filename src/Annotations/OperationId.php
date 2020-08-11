@@ -4,15 +4,13 @@
 namespace YiluTech\ApiDocGenerator\Annotations;
 
 
-use Doctrine\Common\Annotations\Annotation\Enum;
-
 /**
  * Class Parameter
  * @package Util
  * @Annotation
  * @Target("METHOD")
  */
-final class OperationId
+final class OperationId extends Base
 {
     /**
      * @var string

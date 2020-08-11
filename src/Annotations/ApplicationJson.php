@@ -1,23 +1,17 @@
 <?php
 
-
 namespace YiluTech\ApiDocGenerator\Annotations;
 
 /**
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target("ANNOTATION")
  */
-class ExternalDocs extends Base
+final class ApplicationJson extends MediaType
 {
     /**
      * @var string
+     * @Required
      */
-    public $description;
-
-    /**
-     * @var string
-     */
-    public $url;
+    public $type = 'application/json';
 }

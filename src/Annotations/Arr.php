@@ -1,18 +1,18 @@
 <?php
 
 
-namespace YiluTech\ApiDocGenerator\Annotations\Type;
+namespace YiluTech\ApiDocGenerator\Annotations;
 
 /**
  * Class Str
- * @package YiluTech\ApiDocGenerator\Annotations\Type
+ * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target({"PROPERTY", "ANNOTATION"})
+ * @Target({"CLASS", "PROPERTY", "ANNOTATION"})
  */
-final class Arr extends Type
+final class Arr extends Schema
 {
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\Type\Type
+     * @var \YiluTech\ApiDocGenerator\Annotations\Schema
      * @Required
      */
     public $items;

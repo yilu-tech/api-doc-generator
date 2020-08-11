@@ -7,15 +7,15 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target({"CLASS", "METHOD"})
+ * @Target({"CLASS", "METHOD", "ANNOTATION"})
  */
-class Tag extends Base
+class Server extends Base
 {
     /**
      * @var string
      * @Required
      */
-    public $name;
+    public $url;
 
     /**
      * @var string
@@ -23,7 +23,7 @@ class Tag extends Base
     public $description;
 
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\ExternalDocs
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\ServerVariable>
      */
-    public $externalDocs;
+    public $variables;
 }

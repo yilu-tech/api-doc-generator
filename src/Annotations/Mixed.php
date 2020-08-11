@@ -1,15 +1,16 @@
 <?php
 
 
-namespace YiluTech\ApiDocGenerator\Annotations\Type;
+namespace YiluTech\ApiDocGenerator\Annotations;
+
 
 /**
  * Class Str
- * @package YiluTech\ApiDocGenerator\Annotations\Type
+ * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
  * @Target({"PROPERTY", "ANNOTATION"})
  */
-final class Mixed extends Type
+final class Mixed extends Schema
 {
     public function __toString()
     {

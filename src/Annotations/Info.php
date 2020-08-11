@@ -9,7 +9,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * @Annotation
  * @Target({"CLASS"})
  */
-class Info
+class Info extends Base
 {
     /**
      * @var
@@ -37,4 +37,14 @@ class Info
      * @var \YiluTech\ApiDocGenerator\Annotations\ExternalDocs
      */
     public $externalDocs;
+
+    /**
+     * @var \YiluTech\ApiDocGenerator\Annotations\Contact
+     */
+    public $contact;
+
+    /**
+     * @var \YiluTech\ApiDocGenerator\Annotations\License
+     */
+    public $license;
 }

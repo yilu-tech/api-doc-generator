@@ -6,15 +6,22 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Schema
  * @package Util
  * @Annotation
- * @Target({"PROPERTY", "ANNOTATION"})
+ * @Target({"CLASS", "METHOD", "ANNOTATION"})
+ * @see https://swagger.io/specification/#schema-object
  */
-final class Schema extends Base
+class Schema extends Base
 {
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\Type\Type
+     * @var string
      * @required
+     * @Enum({"string", "number", "integer", "array", "object"});
      */
     public $type;
+
+    /**
+     * @var string
+     */
+    public $name;
 
     /**
      * 支持 markdown
@@ -57,24 +64,10 @@ final class Schema extends Base
      */
     public $not;
 
-    /**
-     * @param Schema $other
-     * @throws \Exception
-     */
-    public function merge($other)
-    {
-        if (get_class($other) !== get_class($this->type)) {
-            throw new \Exception('Schema type error.');
-        }
-
-        $this->type->merge($other->type);
-        $other->type = $this->type;
-
-        parent::merge($other);
-    }
-
     public function toArray()
     {
-        return parent::toArray();
+        $array = parent::toArray();
+        unset($array['name']);
+        return $array;
     }
 }

@@ -6,19 +6,21 @@ namespace YiluTech\ApiDocGenerator;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
+use YiluTech\ApiDocGenerator\Annotations as SWG;
 
 class RouteParser
 {
-    protected $controllerAnnotations = [];
+    protected $tags = [];
 
-    protected $actionAnnotations = [];
-
-    protected $formAnnotations = [];
+    protected $schemas = [];
 
     /**
      * @var AnnotationReader
      */
     protected $annotationReader;
+
+    protected $classAnnotations = [];
 
     public function __construct()
     {
@@ -35,28 +37,55 @@ class RouteParser
 
     public function parse()
     {
+        $paths = array();
         foreach ($this->routes() as $route) {
-            $this->parseRoute($route);
+            $route = $this->parseRoute($route);
+            if (empty($route)) continue;
+
+            $path = $route['path'];
+            unset($route['path']);
+            $paths["/$path"] = $route;
         }
-        return [];
+        return $paths;
+    }
+
+    public function getTags()
+    {
+        $tags = array_map(function ($tag) {
+            return $tag->toArray();
+        }, $this->tags);
+        return array_values($tags);
+    }
+
+    public function getSchemas()
+    {
+        return array_map(function ($schemas) {
+            return $schemas->toArray();
+        }, $this->schemas);
     }
 
     /**
      * @param \Illuminate\Routing\Route $route
+     * @return array|null
+     * @throws \Exception
      */
     protected function parseRoute($route)
     {
         $controller = $route->getActionName();
 
         if ($controller === 'Closure') {
-            return;
+            return null;
         }
 
         [$controllerAnnotations, $controllerMethodAnnotations, $formAnnotations, $formMethodAnnotations, $parameters] = $this->parseRuteAction($route->getActionName());
 
-        if ($parameters != null) {
-            dd($formMethodAnnotations);
-        }
+        $parameters = $this->mergeParameters($parameters, $formAnnotations, $formMethodAnnotations, $controllerMethodAnnotations);
+        $location = $this->getLocation($route, $controllerMethodAnnotations, $parameters);
+
+        $this->eachAnnotations($location, $controllerAnnotations);
+        $this->eachAnnotations($location, $controllerMethodAnnotations);
+
+        return $location->toArray();
     }
 
     protected function parseRuteAction($action)
@@ -69,7 +98,7 @@ class RouteParser
             throw new \Exception("Undefined $action");
         }
 
-        $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionClass);
+        $classAnnotations = $this->parseClassAnnotations($reflectionClass);
 
         $reflectionMethod = $reflectionClass->getMethod($method);
 
@@ -80,6 +109,20 @@ class RouteParser
         }
 
         return [$classAnnotations, $methodAnnotations, [], [], []];
+    }
+
+    /**
+     * @param \ReflectionClass $reflectionClass
+     * @return array
+     */
+    protected function parseClassAnnotations($reflectionClass)
+    {
+        $name = $reflectionClass->name;
+        if (!isset($this->classAnnotations[$name])) {
+            $this->classAnnotations[$name] = $this->annotationReader->getClassAnnotations($reflectionClass);
+            $this->registerComponents($this->classAnnotations[$name]);
+        }
+        return $this->classAnnotations[$name];
     }
 
     /**
@@ -108,7 +151,7 @@ class RouteParser
         $method .= 'Rules';
         $reflectionClass = new \ReflectionClass($class);
 
-        $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionClass);
+        $classAnnotations = $this->parseClassAnnotations($reflectionClass);
 
         if (!$reflectionClass->hasMethod($method)) {
             return [$classAnnotations, [], []];
@@ -156,41 +199,198 @@ class RouteParser
         return $parser->parse();
     }
 
+    protected function mergeParameters(...$args)
+    {
+        $parameters = [];
+        foreach ($args as $items) {
+            foreach ($items as $item) {
+                if ($item instanceof SWG\Parameter === false) continue;
+                if (isset($parameters[$item->name])) {
+                    $parameters[$item->name]->merge($item);
+                } else {
+                    $parameters[$item->name] = $item;
+                }
+            }
+        }
+        return $parameters;
+    }
+
+    /**
+     * @param array $parameters
+     * @return array
+     */
+    protected function getQueryParameters($parameters)
+    {
+        return array_filter($parameters, function ($item) {
+            return $item->in === 'query';
+        });
+    }
+
     /**
      * @param \Illuminate\Routing\Route $route
-     * @param string $method
-     * @return Annotations\Location
+     * @param array $annotations
+     * @param array $parameters
+     * @return SWG\Location
      */
-    protected function makeLocation($route, $method)
+    protected function getLocation($route, $annotations, $parameters)
     {
-        $location = new Annotations\Location();
+        $location = Arr::first($annotations, function ($item) {
+                return $item instanceof SWG\Location;
+            }) ?? new SWG\Location();
 
-        $location->path = $route->uri();
+        $location->path = $route->uri;
 
-        $location->method = strtolower($method);
+        foreach ($route->methods as $method) {
+            $method = strtolower($method);
+            $location->set($method, $this->getOperation($route, $annotations, $method, $parameters));
 
-        if ($location->method == 'get' || $location->method == 'delete') {
-            $parameters = $this->getRouteParameters();
-
+            $location->parameters = array_filter($parameters, function ($item) {
+                return isset($item->in);
+            });
         }
 
+        preg_match_all('/(?:{(\w+)(\??)})/', $location->path, $matches);
+
+        foreach ($matches[1] as $index => $value) {
+            if (isset($parameters[$value])) {
+                $parameter = $parameters[$value];
+            } else {
+                $parameter = new SWG\Parameter();
+                $parameter->name = $value;
+                $parameter->in = 'path';
+                $parameter->schema = new SWG\Str();
+            }
+            if ($matches[2][$index] !== '?') {
+                $parameter->required = true;
+            }
+            $location->parameters[$value] = $parameter;
+        }
+
+        if (!empty($location->parameters)) {
+            $location->parameters = array_values($location->parameters);
+        }
 
         return $location;
     }
 
-    protected function makeRequestBody($route)
+    protected function getOperation($route, $annotations, $method, $parameters)
     {
-        $body = new Annotations\RequestBody();
+        $operation = Arr::first($annotations, function ($item) use ($method) {
+                return $item instanceof SWG\Operation && $item->method === $method;
+            }) ?? new SWG\Operation();
 
-        $body->content[] = $route->uri();
+        $operation->method = $method;
 
-        return $body;
+        if (in_array($method, ['post', 'put', 'patch'])) {
+            $operation->set('requestBody', $this->getRequestBody($annotations, $parameters));
+        }
+
+        return $operation;
     }
 
-    protected function makeRequestContent()
+    protected function getRequestBody($annotations, $parameters)
     {
-        $content = new Annotations\Content();
-        $content->type = 'application/json';
+        $requestBody = Arr::first($annotations, function ($item) {
+                return $item instanceof SWG\RequestBody;
+            }) ?? new SWG\RequestBody();
 
+        $schema = new SWG\Obj();
+
+        $parameters = array_filter($parameters, function ($item) {
+            return empty($item->in);
+        });
+
+        if (!empty($parameters)) {
+            foreach ($parameters as $parameter) {
+                $schema->properties[$parameter->name] = $parameter->schema;
+            }
+            if ($parameter->required) {
+                $schema->required[] = $parameter->name;
+            }
+        }
+
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof SWG\MediaType) {
+                $annotation->set('schema', $schema);
+                $requestBody->content[$annotation->type] = $annotation;
+            }
+        }
+
+
+        if (empty($requestBody->content)) {
+            if ($requestBody->required) {
+                throw new \Exception('Request body required.');
+            }
+            if ($schema->type) {
+                $content = new SWG\ApplicationJson();
+                $content->set('schema', $schema);
+                $requestBody->content[$content->type] = $content;
+            }
+        }
+
+        return $requestBody;
     }
+
+    /**
+     * @param array $annotations
+     * @throws \Exception
+     */
+    protected function registerComponents($annotations)
+    {
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof SWG\Tag) {
+                if (isset($this->tags[$annotation->name])) {
+                    throw new \Exception(sprintf('Tag name "%s" exists.', $annotation->name));
+                }
+                $this->tags[$annotation->name] = $annotation;
+            } elseif ($annotation instanceof SWG\Schema) {
+                if (!$annotation->name) {
+                    throw new \Exception('Undefined schema name.');
+                }
+                if (isset($this->schemas[$annotation->name])) {
+                    throw new \Exception(sprintf('Schema name "%s" exists.', $annotation->name));
+                }
+                $this->schemas[$annotation->name] = $annotation;
+            }
+        }
+    }
+
+    /**
+     * @param SWG\Location $location
+     * @param array $annotations
+     */
+    protected function eachAnnotations($location, $annotations)
+    {
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof SWG\Tags) {
+                $this->eachOperations($location, function ($operation) use ($annotation) {
+                    $operation->tags = $annotation->values;
+                });
+            } elseif ($annotation instanceof SWG\JsonResponse) {
+                $response = $annotation->toResponse();
+                $status = $annotation->status ?? 'default';
+                $this->eachOperations($location, function (SWG\Operation $operation) use ($status, $response) {
+                    if (isset($operation->responses[$status])) {
+                        $operation->responses[$status]->set($response);
+                    } else {
+                        $operation->responses[$status] = $response;
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * @param SWG\Location $location
+     * @param callable $callback
+     */
+    protected function eachOperations($location, $callback)
+    {
+        foreach (['get', 'post', 'put', 'delete', 'patch'] as $method) {
+            if (isset($location->$method)) {
+                $callback($location->$method);
+            }
+        }
+    }
+
 }

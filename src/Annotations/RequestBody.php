@@ -7,8 +7,10 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
+ * @Target({"ANNOTATION"})
+ * @see https://swagger.io/specification/#request-body-object
  */
-class RequestBody
+class RequestBody extends Base
 {
     /**
      * @var boolean
@@ -21,7 +23,7 @@ class RequestBody
     public $description;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Content>
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\MediaType>
      */
     public $content;
 }

@@ -8,7 +8,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
  */
-class Components
+class Components extends Base
 {
     /**
      * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>

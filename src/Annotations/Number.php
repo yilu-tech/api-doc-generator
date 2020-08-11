@@ -1,15 +1,15 @@
 <?php
 
 
-namespace YiluTech\ApiDocGenerator\Annotations\Type;
+namespace YiluTech\ApiDocGenerator\Annotations;
 
 /**
  * Class Str
- * @package YiluTech\ApiDocGenerator\Annotations\Type
+ * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
  * @Target({"PROPERTY", "ANNOTATION"})
  */
-class Number extends Type
+final class Number extends Schema
 {
     /**
      * @var string

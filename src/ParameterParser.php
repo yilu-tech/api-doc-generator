@@ -5,7 +5,7 @@ namespace YiluTech\ApiDocGenerator;
 
 
 use Illuminate\Validation\ValidationRuleParser;
-use YiluTech\ApiDocGenerator\Annotations\Type;
+use YiluTech\ApiDocGenerator\Annotations as SWG;
 
 class ParameterParser
 {
@@ -98,12 +98,13 @@ class ParameterParser
         $parameter->name = $name;
         $parameter->schema = $this->makeSchema($name, $value);
 
-        $rules = $value['rules'];
-
-        if (isset($rules['Required'])) {
-            $parameter->required = true;
-        } else if (isset($rules['nullable'])) {
-            $parameter->allowEmptyValue = true;
+        if (isset($value['rules'])) {
+            $rules = $value['rules'];
+            if (isset($rules['Required'])) {
+                $parameter->required = true;
+            } else if (isset($rules['nullable'])) {
+                $parameter->allowEmptyValue = true;
+            }
         }
 
         return $parameter;
@@ -130,17 +131,16 @@ class ParameterParser
 
     protected function makeNumberSchema($name, $value, $integer = false)
     {
-        $schema = $schema = new Annotations\Schema();
-        $schema->type = $integer ? new Type\Integer() : new Type\Number();
+        $schema = $integer ? new SWG\Integer() : new SWG\Number();
 
         $rules = $value['rules'];
         if (isset($rules['Min'])) {
-            $schema->type->mininum = $rules['Min'][0];
-            $schema->type->exclusiveMinimum = true;
+            $schema->mininum = $integer ? (integer)$rules['Min'][0] : (double)$rules['Min'][0];
+            $schema->exclusiveMinimum = true;
         }
         if (isset($rules['Max'])) {
-            $schema->type->maxinum = $rules['Max'][0];
-            $schema->type->exclusiveMaximum = true;
+            $schema->maxinum = $integer ? (integer)$rules['Max'][0] : (double)$rules['Max'][0];
+            $schema->exclusiveMaximum = true;
         }
         if (isset($rules['In'])) {
             $schema->enum = $rules['In'];
@@ -150,19 +150,17 @@ class ParameterParser
 
     protected function makeStringSchema($name, $value)
     {
-        $schema = new Annotations\Schema();
-        $schema->type = new Type\Str();
-
+        $schema = new SWG\Str();
         foreach ($value['rules'] as $key => $value) {
             switch ($key) {
                 case 'In':
                     $schema->enum = $value;
                     break;
                 case 'Min':
-                    $schema->type->minLength = $value[0];
+                    $schema->minLength = (integer)$value[0];
                     break;
                 case 'Max':
-                    $schema->type->maxLength = $value[0];
+                    $schema->maxLength = (integer)$value[0];
                     break;
                 case 'Uri':
                 case 'Date':
@@ -170,7 +168,7 @@ class ParameterParser
                 case 'Ipv6':
                 case 'Email':
                 case 'Password':
-                    $schema->type->format = strtolower($key);
+                    $schema->format = strtolower($key);
                     break;
                 default:
                     break;
@@ -181,38 +179,40 @@ class ParameterParser
 
     protected function makeArraySchema($name, $value)
     {
-        $schema = $schema = new Annotations\Schema();
-        $schema->type = new Type\Arr();
+        $schema = new SWG\Arr();
 
-        $rules = $value['rules'];
-        if (isset($rules['Min'])) {
-            $schema->type->minItems = $rules['Min'][0];
-        }
-        if (isset($rules['Max'])) {
-            $schema->type->maxItems = $rules['Max'][0];
+        if (isset($value['rules'])) {
+            $rules = $value['rules'];
+            if (isset($rules['Min'])) {
+                $schema->minItems = (integer)$rules['Min'][0];
+            }
+            if (isset($rules['Max'])) {
+                $schema->maxItems = (integer)$rules['Max'][0];
+            }
         }
 
-        $schema->type->items = $this->makeSchema($name . '.*', $value['properties']['*']);
+        $schema->items = $this->makeSchema($name . '.*', $value['properties']['*']);
         return $schema;
     }
 
     protected function makeObjectSchema($name, $value)
     {
-        $schema = $schema = new Annotations\Schema();
-        $schema->type = new Type\Obj();
+        $schema = new SWG\Obj();
 
-        $rules = $value['rules'];
-        if (isset($rules['Min'])) {
-            $schema->type->minProperties = $rules['Min'][0];
+        if (isset($value['rules'])) {
+            $rules = $value['rules'];
+            if (isset($rules['Min'])) {
+                $schema->minProperties = (integer)$rules['Min'][0];
+            }
+            if (isset($rules['Max'])) {
+                $schema->maxProperties = (integer)$rules['Max'][0];
+            }
         }
-        if (isset($rules['Max'])) {
-            $schema->type->maxProperties = $rules['Max'][0];
-        }
+
         foreach ($value['properties'] as $key => $property) {
-            $schema->type->properties[] = $this->makeSchema("$name.$key", $property);
-
+            $schema->properties[$key] = $this->makeSchema("$name.$key", $property);
             if (isset($property['rules']['Required'])) {
-                $schema->type->required[] = $key;
+                $schema->required[] = $key;
             }
         }
         return $schema;
@@ -220,15 +220,13 @@ class ParameterParser
 
     protected function makeBooleanSchema($name, $value)
     {
-        $schema = $schema = new Annotations\Schema();
-        $schema->type = new Type\Boolean();
-        return $schema;
+        return new SWG\Boolean();
     }
 
     protected function makeMixedSchema($name, $value)
     {
         $schema = $schema = new Annotations\Schema();
-        $schema->type = new Type\Mixed();
+        $schema->type = new SWG\Mixed();
         return $schema;
     }
 

@@ -1,15 +1,14 @@
 <?php
 
-
-namespace YiluTech\ApiDocGenerator\Annotations\Type;
+namespace YiluTech\ApiDocGenerator\Annotations;
 
 /**
  * Class Str
- * @package YiluTech\ApiDocGenerator\Annotations\Type
+ * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
  * @Target({"PROPERTY", "ANNOTATION"})
  */
-final class Integer extends Number
+final class Integer extends Schema
 {
     /**
      * @var string
@@ -37,4 +36,14 @@ final class Integer extends Number
      * @var integer
      */
     public $multipleOf;
+
+    /**
+     * @var bool
+     */
+    public $exclusiveMinimum;
+
+    /**
+     * @var bool
+     */
+    public $exclusiveMaximum;
 }

@@ -7,14 +7,15 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target("ANNOTATION")
+ * @Target({"ANNOTATION"})
  */
-class ExternalDocs extends Base
+class License extends Base
 {
     /**
      * @var string
+     * @Required
      */
-    public $description;
+    public $name;
 
     /**
      * @var string
