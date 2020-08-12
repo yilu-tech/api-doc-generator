@@ -13,7 +13,6 @@ class Schema extends Base
 {
     /**
      * @var string
-     * @required
      * @Enum({"string", "number", "integer", "array", "object"});
      */
     public $type;
@@ -45,22 +44,22 @@ class Schema extends Base
     public $nullable;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Type\Type>
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
      */
     public $oneOf;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Type\Type>
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
      */
     public $allOf;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Type\Type>
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
      */
     public $onyOf;
 
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\Type\Type
+     * @var \YiluTech\ApiDocGenerator\Annotations\Schema
      */
     public $not;
 

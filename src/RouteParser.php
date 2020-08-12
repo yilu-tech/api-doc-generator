@@ -300,10 +300,8 @@ class RouteParser
             return empty($item->in);
         });
 
-        if (!empty($parameters)) {
-            foreach ($parameters as $parameter) {
-                $schema->properties[$parameter->name] = $parameter->schema;
-            }
+        foreach ($parameters as $parameter) {
+            $schema->properties[$parameter->name] = $parameter->schema;
             if ($parameter->required) {
                 $schema->required[] = $parameter->name;
             }
@@ -315,7 +313,6 @@ class RouteParser
                 $requestBody->content[$annotation->type] = $annotation;
             }
         }
-
 
         if (empty($requestBody->content)) {
             if ($requestBody->required) {

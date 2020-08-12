@@ -14,11 +14,11 @@ class ApiDocGenerator
         $config['paths'] = $parser->parse();
 
         if (!empty($tags = $parser->getTags())) {
-            $config['tags'] = $tags;
+            $config['tags'] = array_merge($config['tags'] ?? [], $tags);
         }
 
         if (!empty($schemas = $parser->getSchemas())) {
-            $config['components']['schemas'] = $schemas;
+            $config['components']['schemas'] = array_merge($config['components']['schemas'] ?? [], $schemas);
         }
 
         return $config;

@@ -6,6 +6,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
+ * @Target("METHOD")
  */
 final class JsonResponse
 {

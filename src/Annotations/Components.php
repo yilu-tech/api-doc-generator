@@ -7,6 +7,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
+ * @Target("CLASS")
  */
 class Components extends Base
 {
