@@ -73,7 +73,7 @@ class RouteParser
     {
         $controller = $route->getActionName();
 
-        if ($controller === 'Closure') {
+        if ($controller === 'Closure' || strpos($controller, '@') === false) {
             return null;
         }
 

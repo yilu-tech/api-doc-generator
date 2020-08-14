@@ -34,7 +34,13 @@ class FormRequest extends Base
 
     protected function getRuleName()
     {
-        $action = Route::getCurrentRoute()->getActionName();
+        $route = Route::getCurrentRoute();
+
+        if (!$route) {
+            return null;
+        }
+
+        $action = $route->getActionName();
         if (strpos($action, '@') === false) {
             return null;
         }
