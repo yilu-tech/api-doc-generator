@@ -4,15 +4,10 @@
 namespace Tests\Form;
 
 
-use Illuminate\Foundation\Http\FormRequest;
-use YiluTech\ApiDocGenerator\Annotations as SWG;
+use YiluTech\ApiDocGenerator\FormRequest;
 
 class UserFormRequest extends FormRequest
 {
-    public function rules()
-    {
-        return [];
-    }
 
     /**
      * @return string[]

@@ -19,6 +19,12 @@ class RouteParserTest extends TestCase
         return [ApiDocGeneratorServiceProvider::class];
     }
 
+    public function testFormRequest()
+    {
+        $response = $this->postJson('/user/create');
+        $response->assertStatus(422);
+    }
+
     public function testPublishConfig()
     {
         $this->artisan('vendor:publish --tag=api-doc-config')->run();
@@ -40,7 +46,6 @@ class RouteParserTest extends TestCase
     public function testParseRoutes()
     {
         $parser = new ApiDocGenerator();
-        dd($parser->toArray());
         $this->assertNotEmpty($parser->toArray()['paths']);
     }
 }
