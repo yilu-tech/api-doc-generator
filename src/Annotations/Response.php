@@ -18,6 +18,11 @@ class Response extends Base
     public $content;
 
     /**
+     * @var integer
+     */
+    public $status;
+
+    /**
      * @var string
      * @Required
      */
@@ -29,7 +34,40 @@ class Response extends Base
     public $headers;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Header>
+     * @var array
      */
     public $links;
+
+    /**
+     * @var boolean
+     */
+    public $overrideBody;
+
+    protected $excepts = ['overrideBody', 'status'];
+
+    public function setContentRoot(array $contents)
+    {
+        foreach ($this->content as $type => $item) {
+            if (empty($contents[$type]) || $this->overrideBody) continue;
+
+            if ($ref = &$this->getBodyRoot($contents[$type])) {
+                $ref = $item->schema;
+                $item->schema = $contents[$type];
+            }
+        }
+    }
+
+    protected function &getBodyRoot(&$body)
+    {
+        $ref = null;
+        foreach ($body as &$item) {
+            if ($item === '$ref') {
+                return $item;
+            }
+            if (is_array($item) && $ref = &$this->getBodyRoot($item)) {
+                return $ref;
+            }
+        }
+        return $ref;
+    }
 }

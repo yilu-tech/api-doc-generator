@@ -116,6 +116,8 @@ class ParameterParser
         switch ($type) {
             case 'integer':
                 return $this->makeNumberSchema($name, $value, true);
+            case 'number':
+                return $this->makeNumberSchema($name, $value);
             case 'boolean':
                 return $this->makeBooleanSchema($name, $value);
             case 'array':
@@ -225,9 +227,7 @@ class ParameterParser
 
     protected function makeMixedSchema($name, $value)
     {
-        $schema = $schema = new Annotations\Schema();
-        $schema->type = new SWG\Mixed();
-        return $schema;
+        return new SWG\Mixed();
     }
 
     /**

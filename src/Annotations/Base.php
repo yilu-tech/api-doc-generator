@@ -6,6 +6,8 @@ namespace YiluTech\ApiDocGenerator\Annotations;
 
 abstract class Base
 {
+    protected $excepts = [];
+
     /**
      * @param static $other
      * @throws \Exception
@@ -32,24 +34,27 @@ abstract class Base
         }
     }
 
+    protected function formatToArray($value)
+    {
+        if ($value instanceof self) {
+            $value = $value->toArray();
+        } elseif (is_object($value)) {
+            $value = array_filter((array)$value);
+        }
+        if (is_array($value)) {
+            $value = array_map([$this, 'formatToArray'], $value);
+        }
+        return $value;
+    }
+
     public function toArray()
     {
         $values = [];
+        $excepts = array_merge($this->excepts, ['excepts']);
 
         foreach ($this as $key => $value) {
-            if (is_null($value)) continue;
-
-            if (is_array($value)) {
-                $value = array_map(function ($item) {
-                    return $item instanceof self ? $item->toArray() : $item;
-                }, $value);
-            }
-
-            if ($value instanceof self) {
-                $value = $value->toArray();
-            }
-
-            $values[$key] = $value;
+            if (is_null($value) || in_array($key, $excepts)) continue;
+            $values[$key] = $this->formatToArray($value);
         }
 
         return $values;

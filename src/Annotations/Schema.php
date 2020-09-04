@@ -44,29 +44,24 @@ class Schema extends Base
     public $nullable;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
+     * @var array
      */
     public $oneOf;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
+     * @var array
      */
     public $allOf;
 
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
+     * @var array
      */
-    public $onyOf;
+    public $anyOf;
 
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\Schema
+     * @var mixed
      */
     public $not;
 
-    public function toArray()
-    {
-        $array = parent::toArray();
-        unset($array['name']);
-        return $array;
-    }
+    protected $excepts = ['name'];
 }

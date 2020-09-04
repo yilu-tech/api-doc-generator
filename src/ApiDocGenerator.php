@@ -4,13 +4,39 @@
 namespace YiluTech\ApiDocGenerator;
 
 
+use YiluTech\ApiDocGenerator\Annotations\Operation;
+
 class ApiDocGenerator
 {
+    protected static $handlers = [];
+
+    public static function registerHandler($annotation, $handler)
+    {
+        static::$handlers[$annotation] = $handler;
+    }
+
+    protected static $booted = false;
+
+    public function __construct()
+    {
+        $this->boot();
+    }
+
+    public function boot()
+    {
+        if (!self::$booted) {
+            $config = $this->getConfig();
+            Operation::$responseBody = $config['responseBody'] ?? null;
+
+            self::$booted = true;
+        }
+    }
+
     public function toArray()
     {
         $config = $this->getConfig();
 
-        $parser = new RouteParser();
+        $parser = new RouteParser($config);
         $config['paths'] = $parser->parse();
 
         if (!empty($tags = $parser->getTags())) {
@@ -20,6 +46,8 @@ class ApiDocGenerator
         if (!empty($schemas = $parser->getSchemas())) {
             $config['components']['schemas'] = array_merge($config['components']['schemas'] ?? [], $schemas);
         }
+
+        unset($config['exceptPath'], $config['responseBody']);
 
         return $config;
     }

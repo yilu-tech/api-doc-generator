@@ -8,7 +8,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * @Annotation
  * @Target("METHOD")
  */
-class JsonResponse extends Response
+class TextResponse extends Response
 {
     /**
      * @var mixed
@@ -21,14 +21,11 @@ class JsonResponse extends Response
         if ($this->content instanceof Reference) {
             return $this->content;
         }
-        if (is_array($this->content)) {
-            $schema = new Obj();
-            $schema->properties = $this->content;
-        } else {
-            $schema = new Arr();
-            $schema->items = $this->content;
+
+        if ($this->content instanceof Str === false) {
+            return new Str();
         }
-        return $schema;
+        return $this->content;
     }
 
     public function toArray()
@@ -37,7 +34,7 @@ class JsonResponse extends Response
         $mediaType->schema = $this->getSchema();
 
         $this->content = [
-            'application/json' => $mediaType
+            'text/plain' => $mediaType
         ];
         return parent::toArray();
     }

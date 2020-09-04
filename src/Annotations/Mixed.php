@@ -12,6 +12,11 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  */
 final class Mixed extends Schema
 {
+    public function toArray()
+    {
+        return '{}';
+    }
+
     public function __toString()
     {
         return '{}';

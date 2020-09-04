@@ -27,6 +27,7 @@ Route::middleware('auth:api')->get('auth-test', function () {
 });
 
 Route::get('user/find', 'Tests\\Controllers\\UserController@find');
+Route::post('user/list', 'Tests\\Controllers\\UserController@list');
 Route::post('user/create', 'Tests\\Controllers\\UserController@create');
 Route::post('user/update', 'Tests\\Controllers\\UserController@update');
 Route::delete('user/delete', 'Tests\\Controllers\\UserController@delete');

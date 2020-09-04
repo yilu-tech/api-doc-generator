@@ -18,6 +18,7 @@ class UserFormRequest extends FormRequest
             'name' => "required|string|min:2|max:32",
             'password' => 'required|password',
             'sex' => 'required|in:0,1,2',
+            'weight' => 'numeric',
             'tags' => 'array|max:5',
             'tags.*' => 'in:member,student,teacher'
         ];
@@ -33,6 +34,7 @@ class UserFormRequest extends FormRequest
             'name' => "string|min:2|max:32",
             'password' => 'password',
             'sex' => 'in:1,2',
+            'weight' => 'numeric',
             'tags' => 'array|max:5',
             'tags.*' => 'in:member,student,teacher'
         ];

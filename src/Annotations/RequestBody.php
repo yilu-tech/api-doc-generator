@@ -7,7 +7,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target({"ANNOTATION"})
+ * @Target({"ANNOTATION", "METHOD"})
  * @see https://swagger.io/specification/#request-body-object
  */
 class RequestBody extends Base

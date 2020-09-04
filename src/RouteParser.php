@@ -22,9 +22,15 @@ class RouteParser
 
     protected $classAnnotations = [];
 
-    public function __construct()
+    protected $pathPatterns;
+
+    protected $responseBody;
+
+    public function __construct($config)
     {
         $this->annotationReader = new AnnotationReader();
+
+        $this->pathPatterns = $config['exceptPath'] ?? null;
     }
 
     /**
@@ -39,8 +45,9 @@ class RouteParser
     {
         $paths = array();
         foreach ($this->routes() as $route) {
+            if (!$this->validateRoute($route)) continue;
+
             $route = $this->parseRoute($route);
-            if (empty($route)) continue;
 
             $path = $route['path'];
             unset($route['path']);
@@ -66,17 +73,11 @@ class RouteParser
 
     /**
      * @param \Illuminate\Routing\Route $route
-     * @return array|null
+     * @return array
      * @throws \Exception
      */
     protected function parseRoute($route)
     {
-        $controller = $route->getActionName();
-
-        if ($controller === 'Closure' || strpos($controller, '@') === false) {
-            return null;
-        }
-
         [$controllerAnnotations, $controllerMethodAnnotations, $formAnnotations, $formMethodAnnotations, $parameters] = $this->parseRuteAction($route->getActionName());
 
         $parameters = $this->mergeParameters($parameters, $formAnnotations, $formMethodAnnotations, $controllerMethodAnnotations);
@@ -86,6 +87,32 @@ class RouteParser
         $this->eachAnnotations($location, $controllerMethodAnnotations);
 
         return $location->toArray();
+    }
+
+    /**
+     * @param \Illuminate\Routing\Route $route
+     * @return boolean
+     */
+    protected function validateRoute($route)
+    {
+        $controller = $route->getActionName();
+
+        if ($controller === 'Closure' || strpos($controller, '@') === false) {
+            return false;
+        }
+
+        if ($this->pathPatterns) {
+            $methods = implode(',', $route->methods);
+            $controller = '/' . $route->uri . '::' . $methods . '::' . $controller;
+
+            foreach ($this->pathPatterns as $pattern) {
+                if (preg_match($pattern, $controller)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     protected function parseRuteAction($action)
@@ -363,14 +390,13 @@ class RouteParser
                 $this->eachOperations($location, function ($operation) use ($annotation) {
                     $operation->tags = $annotation->values;
                 });
-            } elseif ($annotation instanceof SWG\JsonResponse) {
-                $response = $annotation->toResponse();
+            } elseif ($annotation instanceof SWG\Response) {
                 $status = $annotation->status ?? 'default';
-                $this->eachOperations($location, function (SWG\Operation $operation) use ($status, $response) {
+                $this->eachOperations($location, function (SWG\Operation $operation) use ($status, $annotation) {
                     if (isset($operation->responses[$status])) {
-                        $operation->responses[$status]->set($response);
+                        $operation->responses[$status]->set($annotation);
                     } else {
-                        $operation->responses[$status] = $response;
+                        $operation->responses[$status] = $annotation;
                     }
                 });
             }
@@ -385,7 +411,7 @@ class RouteParser
     {
         foreach (['get', 'post', 'put', 'delete', 'patch'] as $method) {
             if (isset($location->$method)) {
-                $callback($location->$method);
+                call_user_func($callback, $location->$method);
             }
         }
     }

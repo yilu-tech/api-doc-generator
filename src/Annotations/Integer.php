@@ -25,12 +25,12 @@ final class Integer extends Schema
     /**
      * @var integer
      */
-    public $mininum;
+    public $minimum;
 
     /**
      * @var integer
      */
-    public $maxinum;
+    public $maximum;
 
     /**
      * @var integer

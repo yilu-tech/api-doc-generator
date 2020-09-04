@@ -94,5 +94,63 @@ MARKDOWN,
                 ],
             ],
         ],
-    ]
+    ],
+
+    'exceptPath' => [
+    ],
+
+    'responseBody' => [
+        200 => [
+            'application/json' => [
+                'type' => 'object',
+                'properties' => [
+                    'data' => '$ref'
+                ]
+            ]
+        ],
+    ],
+
+    'components' => [
+        'schemas' => [
+            'bizException' => [
+                'type' => 'object',
+                'properties' => [
+                    'code' => ['type' => 'string'],
+                    'message' => ['type' => 'string'],
+                ]
+            ],
+            'selectOptions' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'value' => ['oneOf' => [['type' => 'string'], ['type' => 'number']]],
+                        'label' => ['type' => 'string'],
+                    ]
+                ]
+            ],
+            'tableHeader' => [
+                'type' => 'object',
+                'properties' => [
+                    'value' => ['type' => 'string'],
+                    'label' => ['type' => 'string'],
+                    'allowSort' => ['type' => 'boolean'],
+                ]
+            ],
+            'searchField' => [
+                'type' => 'object',
+                'properties' => [
+                    'name' => ['type' => 'string'],
+                    'label' => ['type' => 'string'],
+                    'itype' => ['type' => 'string', 'enum' => ['integer', 'numeric', 'string', 'date', 'boolean']],
+                    'ctype' => ['type' => 'string', 'enum' => ['keyword', 'numeric', 'numeric-in', 'select', 'radio', 'multiple', 'tree-select', 'date', 'date-in', 'time', 'time-in']],
+                    'options' => ['$ref' => '#/components/schemas/selectOptions'],
+                    'children' => [
+                        'type' => 'array',
+                        'items' => ['$ref' => '#/components/schemas/searchField']
+                    ],
+                ]
+            ]
+        ]
+    ],
 ];

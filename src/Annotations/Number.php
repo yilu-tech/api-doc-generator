@@ -26,7 +26,7 @@ final class Number extends Schema
     /**
      * @var float
      */
-    public $mininum;
+    public $minimum;
 
     /**
      * @var bool
@@ -36,7 +36,7 @@ final class Number extends Schema
     /**
      * @var float
      */
-    public $maxinum;
+    public $maximum;
 
     /**
      * @var bool
