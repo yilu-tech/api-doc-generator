@@ -12,15 +12,15 @@ namespace YiluTech\ApiDocGenerator\Annotations;
 class Example extends Base
 {
     /**
+     * @var string
+     */
+    public $name;
+
+    /**
      * @var
      * @Required
      */
     public $value;
-
-    /**
-     * @var string
-     */
-    public $name;
 
     /**
      * @var string

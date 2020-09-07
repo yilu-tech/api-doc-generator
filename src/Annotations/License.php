@@ -21,4 +21,6 @@ class License extends Base
      * @var string
      */
     public $url;
+
+    protected $valueKey = 'name';
 }

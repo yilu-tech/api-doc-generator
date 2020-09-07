@@ -33,5 +33,7 @@ class MediaType extends Base
 
     public $encoding;
 
+    protected $valueKey = 'schema';
+
     protected $excepts = ['type'];
 }

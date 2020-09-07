@@ -15,10 +15,10 @@ class Reference extends Base
      * @var string
      * @Required
      */
-    public $name;
+    public $value;
 
     public function toArray()
     {
-        return ['$ref' => $this->name];
+        return ['$ref' => $this->value];
     }
 }

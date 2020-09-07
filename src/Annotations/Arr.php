@@ -12,16 +12,16 @@ namespace YiluTech\ApiDocGenerator\Annotations;
 final class Arr extends Schema
 {
     /**
-     * @var \YiluTech\ApiDocGenerator\Annotations\Schema
-     * @Required
-     */
-    public $items;
-
-    /**
      * @var string
      * @property-read
      */
     public $type = 'array';
+
+    /**
+     * @var \YiluTech\ApiDocGenerator\Annotations\Schema
+     * @Required
+     */
+    public $items;
 
     /**
      * @var integer
@@ -37,4 +37,6 @@ final class Arr extends Schema
      * @var bool
      */
     public $uniqueItems;
+
+    protected $valueKey = 'items';
 }

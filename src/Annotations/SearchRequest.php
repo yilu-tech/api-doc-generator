@@ -12,35 +12,23 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  */
 class SearchRequest extends RequestBody
 {
-    public function getSchema()
+    public function setValue($value)
     {
-        $schema = new Obj();
-
-        $schema->properties = [
-            'action' => [
-                'type' => 'string',
-                'enum' => ['prepare', 'query', 'export']
+        $schema = new Obj([
+            'properties' => [
+                'action' => [
+                    'type' => 'string',
+                    'enum' => ['prepare', 'query', 'export']
+                ],
+                'page' => ['type' => 'integer', 'minimum' => 1, 'exclusiveMinimum' => true],
+                'size' => ['type' => 'integer', 'minimum' => 1, 'exclusiveMinimum' => true],
+                'fields' => ['type' => 'array', 'items' => ['type' => 'string']],
+                'params' => ['type' => 'array', 'items' => ['oneOf' => [['type' => 'string'], ['type' => 'number']]]],
             ],
-            'page' => ['type' => 'integer', 'minimum' => 1, 'exclusiveMinimum' => true],
-            'size' => ['type' => 'integer', 'minimum' => 1, 'exclusiveMinimum' => true],
-            'fields' => ['type' => 'array', 'items' => ['type' => 'string']],
-            'params' => ['type' => 'array', 'items' => ['oneOf' => [['type' => 'string'], ['type' => 'number']]]],
-        ];
-
-        $schema->required = ['action'];
-
-        return $schema;
-    }
-
-    public function toArray()
-    {
-        $mediaType = new MediaType();
-        $mediaType->schema = $this->getSchema();
-
+            'required' => ['action']
+        ]);
         $this->content = [
-            'application/json' => $mediaType
+            'application/json' => new MediaType(['schema' => $schema])
         ];
-
-        return parent::toArray();
     }
 }

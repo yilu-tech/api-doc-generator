@@ -47,4 +47,6 @@ class Info extends Base
      * @var \YiluTech\ApiDocGenerator\Annotations\License
      */
     public $license;
+
+    protected $valueKey = 'title';
 }

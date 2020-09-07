@@ -26,4 +26,6 @@ class Tag extends Base
      * @var \YiluTech\ApiDocGenerator\Annotations\ExternalDocs
      */
     public $externalDocs;
+
+    protected $valueKey = 'name';
 }

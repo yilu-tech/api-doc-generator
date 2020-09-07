@@ -26,13 +26,7 @@ class UserController
     /**
      * @param UserFormRequest $request
      * @SWG\Parameter(name="id", in="query", schema=@SWG\Schema(oneOf={@SWG\Integer, @SWG\Str}))
-     * @SWG\PaginationResponse(@SWG\Reference("#/components/schemas/user"), description="get user")
-     * @SWG\PaginationResponse({
-     *     "data" = @SWG\Schema(oneOf={
-     *          @SWG\Reference("#/components/schemas/user"),
-     *          @SWG\Str(default="""#/components/schemas/user")
-     *     })
-     * }, description="get user", status=422)
+     * @SWG\JsonResponse(@SWG\Obj(ref="#/components/schemas/user"), description="user")
      */
     public function find(UserFormRequest $request)
     {

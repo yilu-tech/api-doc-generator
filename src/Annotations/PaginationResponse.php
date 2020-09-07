@@ -22,20 +22,18 @@ class PaginationResponse extends JsonResponse
      */
     public $itemKey = 'data';
 
+    public $overrideBody = true;
+
+    protected $valueKey = 'content';
+
     protected $excepts = ['overrideBody', 'status', 'itemKey'];
 
-    public function getSchema()
+    public function setValue($value)
     {
-        $pagination = new Pagination();
-
-        if ($this->content instanceof Reference) {
-            $pagination->item = $this->content;
-        } else {
-            $pagination->item = ['type' => 'object', 'properties' => $this->content];
+        if (is_array($value)) {
+            $value = new Obj(['properties' => $value]);
         }
-        $pagination->itemKey = $this->itemKey;
-
-        return [
+        $schema = new Schema([
             'oneOf' => [
                 [
                     'type' => 'object',
@@ -51,8 +49,9 @@ class PaginationResponse extends JsonResponse
                         ]
                     ]
                 ],
-                $pagination->getSchema()
+                new Pagination(['value' => $value, 'itemKey' => $this->itemKey])
             ]
-        ];
+        ]);
+        parent::setValue($schema);
     }
 }

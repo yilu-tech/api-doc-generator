@@ -13,15 +13,15 @@ final class Number extends Schema
 {
     /**
      * @var string
-     * @Enum({"int32", "int64", "float", "double"})
-     */
-    public $format;
-
-    /**
-     * @var string
      * @property-read
      */
     public $type = 'number';
+
+    /**
+     * @var string
+     * @Enum({"int32", "int64", "float", "double"})
+     */
+    public $format;
 
     /**
      * @var float
@@ -47,4 +47,6 @@ final class Number extends Schema
      * @var float
      */
     public $multipleOf;
+
+    protected $valueKey = 'format';
 }

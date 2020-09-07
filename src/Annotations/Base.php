@@ -6,7 +6,36 @@ namespace YiluTech\ApiDocGenerator\Annotations;
 
 abstract class Base
 {
+    /**
+     * @var string
+     */
+    public $ref;
+
+    protected $valueKey = 'value';
+
     protected $excepts = [];
+
+    public function __construct($values = null)
+    {
+        if (empty($values)) {
+            $this->setValue(null);
+        } elseif (is_array($values)) {
+            foreach ($values as $key => $value) {
+                if ($key === 'value' || $key === $this->valueKey) {
+                    $this->setValue($value);
+                } else {
+                    $this->{$key} = $value;
+                }
+            }
+        } else {
+            $this->setValue($values);
+        }
+    }
+
+    public function setValue($value)
+    {
+        $this->{$this->valueKey} = $value;
+    }
 
     /**
      * @param static $other
@@ -49,8 +78,12 @@ abstract class Base
 
     public function toArray()
     {
+        if ($this->ref) {
+            return ['$ref' => $this->ref];
+        }
+
         $values = [];
-        $excepts = array_merge($this->excepts, ['excepts']);
+        $excepts = array_merge($this->excepts, ['excepts', 'ref', 'valueKey']);
 
         foreach ($this as $key => $value) {
             if (is_null($value) || in_array($key, $excepts)) continue;

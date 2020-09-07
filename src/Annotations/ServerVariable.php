@@ -26,4 +26,6 @@ class ServerVariable extends Base
      * @var array<string>
      */
     public $enum;
+
+    protected $valueKey = 'default';
 }

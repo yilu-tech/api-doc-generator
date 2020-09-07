@@ -82,6 +82,8 @@ final class Parameter extends Base
      */
     public $allowReserved;
 
+    protected $valueKey = 'name';
+
     public function key()
     {
         return $this->in . ':' . $this->name;

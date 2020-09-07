@@ -16,26 +16,15 @@ class TextResponse extends Response
      */
     public $content;
 
-    public function getSchema()
+    protected $valueKey = 'content';
+
+    public function setValue($value)
     {
-        if ($this->content instanceof Reference) {
-            return $this->content;
+        if ($this->content instanceof Str === false || $this->content instanceof Reference === false) {
+            $value = new Str();
         }
-
-        if ($this->content instanceof Str === false) {
-            return new Str();
-        }
-        return $this->content;
-    }
-
-    public function toArray()
-    {
-        $mediaType = new MediaType();
-        $mediaType->schema = $this->getSchema();
-
         $this->content = [
-            'text/plain' => $mediaType
+            'text/plain' => new MediaType(['schema' => $value])
         ];
-        return parent::toArray();
     }
 }

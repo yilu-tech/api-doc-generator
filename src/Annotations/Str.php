@@ -13,15 +13,15 @@ final class Str extends Schema
 {
     /**
      * @var string
-     * @Enum({"date", "date-time", "password", "byte", "binary", "email", "uuid", "uri", "hostname", "ipv4", "ipv6"})
-     */
-    public $format;
-
-    /**
-     * @var string
      * @property-read
      */
     public $type = 'string';
+
+    /**
+     * @var string
+     * @Enum({"date", "date-time", "password", "byte", "binary", "email", "uuid", "uri", "hostname", "ipv4", "ipv6"})
+     */
+    public $format;
 
     /**
      * @var string
@@ -37,4 +37,6 @@ final class Str extends Schema
      * @var integer
      */
     public $maxLength;
+
+    protected $valueKey = 'format';
 }

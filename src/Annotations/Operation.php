@@ -72,6 +72,8 @@ final class Operation extends Base
      */
     public $servers;
 
+    protected $valueKey = 'method';
+
     protected $excepts = ['method'];
 
     public static $responseBody;
@@ -89,7 +91,7 @@ final class Operation extends Base
         if ($this->responses) {
             foreach ($this->responses as $status => $response) {
                 if (isset(self::$responseBody[$status])) {
-                    $response->setContentRoot(self::$responseBody[$status]);
+                    $response->rewriteBody(self::$responseBody[$status]);
                 }
             }
         }

@@ -31,4 +31,6 @@ final class Header extends Base
      * @var string
      */
     public $description;
+
+    protected $valueKey = 'name';
 }

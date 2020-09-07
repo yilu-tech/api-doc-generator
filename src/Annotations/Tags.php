@@ -15,5 +15,5 @@ class Tags
      * @var array<string>
      * @Required
      */
-    public $values;
+    public $value;
 }

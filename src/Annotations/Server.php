@@ -26,4 +26,6 @@ class Server extends Base
      * @var array<\YiluTech\ApiDocGenerator\Annotations\ServerVariable>
      */
     public $variables;
+
+    protected $valueKey = 'url';
 }

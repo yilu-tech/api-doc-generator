@@ -13,7 +13,7 @@ class Schema extends Base
 {
     /**
      * @var string
-     * @Enum({"string", "number", "integer", "array", "object"});
+     * @Enum({"string", "number", "integer", "array", "object", "boolean"});
      */
     public $type;
 
@@ -62,6 +62,8 @@ class Schema extends Base
      * @var mixed
      */
     public $not;
+
+    protected $valueKey = 'type';
 
     protected $excepts = ['name'];
 }

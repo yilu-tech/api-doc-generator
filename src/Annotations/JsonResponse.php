@@ -16,29 +16,13 @@ class JsonResponse extends Response
      */
     public $content;
 
-    public function getSchema()
+    public function setValue($value)
     {
-        if ($this->content instanceof Reference) {
-            return $this->content;
+        if (is_array($value)) {
+            $value = new Obj(['properties' => $value]);
         }
-        if (is_array($this->content)) {
-            $schema = new Obj();
-            $schema->properties = $this->content;
-        } else {
-            $schema = new Arr();
-            $schema->items = $this->content;
-        }
-        return $schema;
-    }
-
-    public function toArray()
-    {
-        $mediaType = new MediaType();
-        $mediaType->schema = $this->getSchema();
-
         $this->content = [
-            'application/json' => $mediaType
+            'application/json' => new MediaType(['schema' => $value])
         ];
-        return parent::toArray();
     }
 }

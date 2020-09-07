@@ -25,4 +25,6 @@ class Contact extends Base
      * @var string
      */
     public $email;
+
+    protected $valueKey = 'name';
 }

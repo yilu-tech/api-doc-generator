@@ -12,15 +12,15 @@ namespace YiluTech\ApiDocGenerator\Annotations;
 final class Obj extends Schema
 {
     /**
-     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
-     */
-    public $properties;
-
-    /**
      * @var string
      * @property-read
      */
     public $type = 'object';
+
+    /**
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\Schema>
+     */
+    public $properties;
 
     /**
      * @var integer
@@ -41,4 +41,6 @@ final class Obj extends Schema
      * @var mixed
      */
     public $additionalProperties;
+
+    protected $valueKey = 'properties';
 }

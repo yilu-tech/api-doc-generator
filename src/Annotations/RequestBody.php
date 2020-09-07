@@ -26,4 +26,6 @@ class RequestBody extends Base
      * @var array<\YiluTech\ApiDocGenerator\Annotations\MediaType>
      */
     public $content;
+
+    protected $valueKey = 'content';
 }

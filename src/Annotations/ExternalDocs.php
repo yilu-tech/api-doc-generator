@@ -20,4 +20,6 @@ class ExternalDocs extends Base
      * @var string
      */
     public $url;
+
+    protected $valueKey = 'description';
 }

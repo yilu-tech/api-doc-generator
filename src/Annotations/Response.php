@@ -7,7 +7,7 @@ namespace YiluTech\ApiDocGenerator\Annotations;
  * Class Example
  * @package YiluTech\ApiDocGenerator\Annotations
  * @Annotation
- * @Target({"ANNOTATION"})
+ * @Target({"ANNOTATION", "METHOD"})
  * @see https://swagger.io/specification/#response-object
  */
 class Response extends Base
@@ -43,9 +43,11 @@ class Response extends Base
      */
     public $overrideBody;
 
+    protected $valueKey = 'content';
+
     protected $excepts = ['overrideBody', 'status'];
 
-    public function setContentRoot(array $contents)
+    public function rewriteBody(array $contents)
     {
         foreach ($this->content as $type => $item) {
             if (empty($contents[$type]) || $this->overrideBody) continue;

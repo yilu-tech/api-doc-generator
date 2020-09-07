@@ -12,15 +12,15 @@ final class Integer extends Schema
 {
     /**
      * @var string
-     * @Enum({"int32", "int64"})
-     */
-    public $format;
-
-    /**
-     * @var string
      * @property-read
      */
     public $type = 'integer';
+
+    /**
+     * @var string
+     * @Enum({"int32", "int64"})
+     */
+    public $format;
 
     /**
      * @var integer
@@ -46,4 +46,6 @@ final class Integer extends Schema
      * @var bool
      */
     public $exclusiveMaximum;
+
+    protected $valueKey = 'format';
 }

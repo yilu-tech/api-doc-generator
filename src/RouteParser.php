@@ -388,7 +388,7 @@ class RouteParser
         foreach ($annotations as $annotation) {
             if ($annotation instanceof SWG\Tags) {
                 $this->eachOperations($location, function ($operation) use ($annotation) {
-                    $operation->tags = $annotation->values;
+                    $operation->tags = $annotation->value;
                 });
             } elseif ($annotation instanceof SWG\Response) {
                 $status = $annotation->status ?? 'default';

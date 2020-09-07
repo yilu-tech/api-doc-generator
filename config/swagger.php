@@ -150,6 +150,16 @@ MARKDOWN,
                         'items' => ['$ref' => '#/components/schemas/searchField']
                     ],
                 ]
+            ],
+            'pagination' => [
+                'type' => 'object',
+                'properties' => [
+                    'current_page' => ['type' => 'integer', 'minimum' => 0],
+                    'last_page' => ['type' => 'integer', 'minimum' => 0],
+                    'per_page' => ['type' => 'integer', 'minimum' => 1],
+                    'total' => ['type' => 'integer', 'minimum' => 0],
+                ],
+                'required' => ['current_page', 'last_page', 'per_page', 'total']
             ]
         ]
     ],

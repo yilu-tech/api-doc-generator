@@ -75,6 +75,8 @@ final class Location extends Base
      */
     public $servers;
 
+    protected $valueKey = 'path';
+
     public function toArray()
     {
         return array_filter(parent::toArray());
