@@ -310,6 +310,12 @@ class RouteParser
 
         if (in_array($method, ['post', 'put', 'patch'])) {
             $operation->set('requestBody', $this->getRequestBody($annotations, $parameters));
+        } else {
+            foreach ($parameters as $parameter) {
+                if (empty($parameter->in)) {
+                    $parameter->in = 'query';
+                }
+            }
         }
 
         return $operation;

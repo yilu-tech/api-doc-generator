@@ -137,11 +137,11 @@ class ParameterParser
 
         $rules = $value['rules'];
         if (isset($rules['Min'])) {
-            $schema->mininum = $integer ? (integer)$rules['Min'][0] : (double)$rules['Min'][0];
+            $schema->minimum = $integer ? (integer)$rules['Min'][0] : (double)$rules['Min'][0];
             $schema->exclusiveMinimum = true;
         }
         if (isset($rules['Max'])) {
-            $schema->maxinum = $integer ? (integer)$rules['Max'][0] : (double)$rules['Max'][0];
+            $schema->maximum = $integer ? (integer)$rules['Max'][0] : (double)$rules['Max'][0];
             $schema->exclusiveMaximum = true;
         }
         if (isset($rules['In'])) {

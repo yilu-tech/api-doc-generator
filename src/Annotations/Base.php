@@ -17,9 +17,7 @@ abstract class Base
 
     public function __construct($values = null)
     {
-        if (empty($values)) {
-            $this->setValue(null);
-        } elseif (is_array($values)) {
+        if (is_array($values)) {
             foreach ($values as $key => $value) {
                 if ($key === 'value' || $key === $this->valueKey) {
                     $this->setValue($value);
@@ -27,7 +25,7 @@ abstract class Base
                     $this->{$key} = $value;
                 }
             }
-        } else {
+        } else if (isset($values)) {
             $this->setValue($values);
         }
     }
