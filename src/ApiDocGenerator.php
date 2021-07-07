@@ -47,19 +47,19 @@ class ApiDocGenerator
             $config['components']['schemas'] = array_merge($config['components']['schemas'] ?? [], $schemas);
         }
 
-        unset($config['exceptPath'], $config['responseBody']);
+        unset($config['exceptPath'], $config['responseBody'], $config['authMocker']);
 
         return $config;
     }
 
     public function toJson()
     {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        return json_encode($this->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     public function toYaml()
     {
-        return yaml_emit($this->toArray());
+        return yaml_emit($this->toArray(), YAML_UTF8_ENCODING);
     }
 
     protected function getConfig()

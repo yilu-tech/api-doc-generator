@@ -102,7 +102,7 @@ class ParameterParser
             $rules = $value['rules'];
             if (isset($rules['Required'])) {
                 $parameter->required = true;
-            } else if (isset($rules['nullable'])) {
+            } else if (isset($rules['Nullable'])) {
                 $parameter->allowEmptyValue = true;
             }
         }

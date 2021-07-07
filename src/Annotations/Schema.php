@@ -66,4 +66,9 @@ class Schema extends Base
     protected $valueKey = 'type';
 
     protected $excepts = ['name'];
+
+    protected function getRef()
+    {
+        return '#/components/schemas/' . parent::getRef();
+    }
 }

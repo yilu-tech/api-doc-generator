@@ -1,5 +1,6 @@
 {
     "name": "yilu-tech/api-doc-generator",
+    "description": "Generate laravel api doc.",
     "authors": [
         {
             "name": "yj",

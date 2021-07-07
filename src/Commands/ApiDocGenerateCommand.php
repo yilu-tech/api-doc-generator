@@ -39,7 +39,7 @@ class ApiDocGenerateCommand extends Command
         $parser = new ApiDocGenerator();
 
         if ($type === 'yaml') {
-            yaml_emit_file($path, $parser->toArray());
+            yaml_emit_file($path, $parser->toArray(), YAML_UTF8_ENCODING);
         }
 
         if ($type === 'json') {

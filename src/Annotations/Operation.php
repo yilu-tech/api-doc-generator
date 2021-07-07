@@ -44,6 +44,11 @@ final class Operation extends Base
     public $operationId;
 
     /**
+     * @var array<\YiluTech\ApiDocGenerator\Annotations\Parameter>
+     */
+    public $parameters;
+
+    /**
      * @var \YiluTech\ApiDocGenerator\Annotations\RequestBody
      */
     public $requestBody;

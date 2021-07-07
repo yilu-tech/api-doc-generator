@@ -28,4 +28,9 @@ class RequestBody extends Base
     public $content;
 
     protected $valueKey = 'content';
+
+    protected function getRef()
+    {
+        return '#/components/requestBodies/' . parent::getRef();
+    }
 }

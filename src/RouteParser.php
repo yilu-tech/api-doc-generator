@@ -7,6 +7,7 @@ namespace YiluTech\ApiDocGenerator;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use YiluTech\ApiDocGenerator\Annotations as SWG;
 
 class RouteParser
@@ -14,6 +15,8 @@ class RouteParser
     protected $tags = [];
 
     protected $schemas = [];
+
+    protected $config = [];
 
     /**
      * @var AnnotationReader
@@ -28,6 +31,8 @@ class RouteParser
 
     public function __construct($config)
     {
+        $this->config = $config;
+
         $this->annotationReader = new AnnotationReader();
 
         $this->pathPatterns = $config['exceptPath'] ?? null;
@@ -43,17 +48,31 @@ class RouteParser
 
     public function parse()
     {
+        $this->mockAuthLogin();
+
         $paths = array();
         foreach ($this->routes() as $route) {
             if (!$this->validateRoute($route)) continue;
 
             $route = $this->parseRoute($route);
 
-            $path = $route['path'];
+            $path = '/' . $route['path'];
             unset($route['path']);
-            $paths["/$path"] = $route;
+
+            if (isset($paths[$path])) {
+                $route = array_merge($paths[$path], $route);
+            }
+            $paths[$path] = $route;
         }
         return $paths;
+    }
+
+    protected function mockAuthLogin()
+    {
+        if (isset($this->config['authMocker'])) {
+            $mocker = $this->config['authMocker'];
+            Auth::login(is_string($mocker) ? app($mocker) : call_user_func($mocker));
+        }
     }
 
     public function getTags()
@@ -78,10 +97,10 @@ class RouteParser
      */
     protected function parseRoute($route)
     {
-        [$controllerAnnotations, $controllerMethodAnnotations, $formAnnotations, $formMethodAnnotations, $parameters] = $this->parseRuteAction($route->getActionName());
+        [$controllerAnnotations, $controllerMethodAnnotations, $formAnnotations, $formMethodAnnotations, $body] = $this->parseRuteAction($route->getActionName());
 
-        $parameters = $this->mergeParameters($parameters, $formAnnotations, $formMethodAnnotations, $controllerMethodAnnotations);
-        $location = $this->getLocation($route, $controllerMethodAnnotations, $parameters);
+        $parameters = $this->mergeParameters($formAnnotations, $formMethodAnnotations, $controllerMethodAnnotations);
+        $location   = $this->getLocation($route, $controllerMethodAnnotations, $parameters, $body);
 
         $this->eachAnnotations($location, $controllerAnnotations);
         $this->eachAnnotations($location, $controllerMethodAnnotations);
@@ -102,7 +121,7 @@ class RouteParser
         }
 
         if ($this->pathPatterns) {
-            $methods = implode(',', $route->methods);
+            $methods    = implode(',', $route->methods);
             $controller = '/' . $route->uri . '::' . $methods . '::' . $controller;
 
             foreach ($this->pathPatterns as $pattern) {
@@ -160,8 +179,9 @@ class RouteParser
     protected function getRouteFormRequestClass($reflectionMethod)
     {
         foreach ($reflectionMethod->getParameters() as $reflectionParameter) {
-            $type = (string)$reflectionParameter->getType();
-            if (is_subclass_of($type, FormRequest::class)) {
+            $type = $reflectionParameter->getType();
+            if ($type instanceof \ReflectionNamedType &&
+                is_subclass_of($type = $type->getName(), FormRequest::class)) {
                 return $type;
             }
         }
@@ -175,55 +195,29 @@ class RouteParser
      */
     protected function parseFormRequest($class, $method)
     {
-        $method .= 'Rules';
         $reflectionClass = new \ReflectionClass($class);
 
         $classAnnotations = $this->parseClassAnnotations($reflectionClass);
 
-        if (!$reflectionClass->hasMethod($method)) {
-            return [$classAnnotations, [], []];
+        $methodAnnotations = [];
+        $rules             = [];
+
+        if ($reflectionClass->hasMethod($ruleMethod = $method . 'Rules')
+            || $reflectionClass->hasMethod($ruleMethod = 'get' . ucfirst($method) . 'Rules')) {
+            $reflectionMethod  = $reflectionClass->getMethod($ruleMethod);
+            $methodAnnotations = $this->annotationReader->getMethodAnnotations($reflectionMethod);
+
+            $rules = app()->call("$class@$ruleMethod");
+        } elseif ($reflectionClass->hasMethod('getSceneRules')) {
+            $rules = app()->call("$class@getSceneRules", ['scene' => $method]);
         }
 
-        $reflectionMethod = $reflectionClass->getMethod($method);
-        $methodAnnotations = $this->annotationReader->getMethodAnnotations($reflectionMethod);
-
-        $rules = app()->call("$class@$method");
-        $parser = new ParameterParser($rules);
-
-        return [$classAnnotations, $methodAnnotations, $parser->parse()];
-    }
-
-    /**
-     * @param \Illuminate\Routing\Route $route
-     * @return array
-     */
-    protected function getRouteParameters($route)
-    {
-        $controller = $route->getActionName();
-
-        if ($controller === 'Closure') {
-            return [];
+        if (!empty($rules)) {
+            $parser = new ParameterParser($rules);
+            $rules  = $parser->parse();
         }
 
-        [$class, $action] = explode('@', $controller, 2);
-
-
-        $fromRequestClass = $this->getRouteFormRequestClass($class, $action);
-
-
-        $reflectionClass = new \ReflectionClass($fromRequestClass);
-
-        $action .= 'Rules';
-
-        if (!$reflectionClass->hasMethod($action)) {
-            return [];
-        }
-
-        $rules = app()->call("$fromRequestClass@$action");
-
-        $parser = new ParameterParser($rules);
-
-        return $parser->parse();
+        return [$classAnnotations, $methodAnnotations, $rules];
     }
 
     protected function mergeParameters(...$args)
@@ -233,10 +227,9 @@ class RouteParser
             foreach ($items as $item) {
                 if ($item instanceof SWG\Parameter === false) continue;
                 if (isset($parameters[$item->name])) {
-                    $parameters[$item->name]->merge($item);
-                } else {
-                    $parameters[$item->name] = $item;
+                    $item = $parameters[$item->name]->merge($item);
                 }
+                $parameters[$item->name] = $item;
             }
         }
         return $parameters;
@@ -255,11 +248,12 @@ class RouteParser
 
     /**
      * @param \Illuminate\Routing\Route $route
-     * @param array $annotations
-     * @param array $parameters
+     * @param array                     $annotations
+     * @param array                     $parameters
+     * @param array                     $body
      * @return SWG\Location
      */
-    protected function getLocation($route, $annotations, $parameters)
+    protected function getLocation($route, $annotations, $parameters, $body)
     {
         $location = Arr::first($annotations, function ($item) {
                 return $item instanceof SWG\Location;
@@ -269,23 +263,21 @@ class RouteParser
 
         foreach ($route->methods as $method) {
             $method = strtolower($method);
-            $location->set($method, $this->getOperation($route, $annotations, $method, $parameters));
-
-            $location->parameters = array_filter($parameters, function ($item) {
-                return isset($item->in);
-            });
+            if (in_array($method, ['get', 'post', 'put', 'delete', 'patch'])) {
+                $location->set($method, $this->getOperation($route, $annotations, $method, $parameters, $body));
+            }
         }
 
         preg_match_all('/(?:{(\w+)(\??)})/', $location->path, $matches);
 
         foreach ($matches[1] as $index => $value) {
-            if (isset($parameters[$value])) {
+            if (isset($parameters[$value]) && $parameters[$value]->in === 'path') {
                 $parameter = $parameters[$value];
             } else {
-                $parameter = new SWG\Parameter();
-                $parameter->name = $value;
-                $parameter->in = 'path';
+                $parameter         = new SWG\Parameter();
+                $parameter->name   = $value;
                 $parameter->schema = new SWG\Str();
+                $parameter->in     = 'path';
             }
             if ($matches[2][$index] !== '?') {
                 $parameter->required = true;
@@ -300,7 +292,7 @@ class RouteParser
         return $location;
     }
 
-    protected function getOperation($route, $annotations, $method, $parameters)
+    protected function getOperation($route, $annotations, $method, $parameters, $body)
     {
         $operation = Arr::first($annotations, function ($item) use ($method) {
                 return $item instanceof SWG\Operation && $item->method === $method;
@@ -309,15 +301,30 @@ class RouteParser
         $operation->method = $method;
 
         if (in_array($method, ['post', 'put', 'patch'])) {
-            $operation->set('requestBody', $this->getRequestBody($annotations, $parameters));
+            $operation->set('requestBody', $this->getRequestBody($annotations, $body));
         } else {
-            foreach ($parameters as $parameter) {
-                if (empty($parameter->in)) {
-                    $parameter->in = 'query';
-                }
+            foreach ($body as $parameter) {
+                $parameter->in                           = 'query';
+                $operation->parameters[$parameter->name] = $parameter;
             }
         }
 
+        foreach ($parameters as $parameter) {
+            if (empty($parameter->in)) {
+                $parameter->in = 'query';
+            }
+
+            if ($parameter->in === 'path') continue;
+
+            if (isset($operation->parameters[$parameter->name])) {
+                $parameter = $operation->parameters[$parameter->name]->merge($parameter);
+            }
+            $operation->parameters[$parameter->name] = $parameter;
+        }
+
+        if (!empty($operation->parameters)) {
+            $operation->parameters = array_values($operation->parameters);
+        }
         return $operation;
     }
 
@@ -328,10 +335,6 @@ class RouteParser
             }) ?? new SWG\RequestBody();
 
         $schema = new SWG\Obj();
-
-        $parameters = array_filter($parameters, function ($item) {
-            return empty($item->in);
-        });
 
         foreach ($parameters as $parameter) {
             $schema->properties[$parameter->name] = $parameter->schema;
@@ -369,17 +372,17 @@ class RouteParser
     {
         foreach ($annotations as $annotation) {
             if ($annotation instanceof SWG\Tag) {
-                if (isset($this->tags[$annotation->name])) {
-                    throw new \Exception(sprintf('Tag name "%s" exists.', $annotation->name));
-                }
+//                if (isset($this->tags[$annotation->name])) {
+//                    throw new \Exception(sprintf('Tag name "%s" exists.', $annotation->name));
+//                }
                 $this->tags[$annotation->name] = $annotation;
             } elseif ($annotation instanceof SWG\Schema) {
                 if (!$annotation->name) {
                     throw new \Exception('Undefined schema name.');
                 }
-                if (isset($this->schemas[$annotation->name])) {
-                    throw new \Exception(sprintf('Schema name "%s" exists.', $annotation->name));
-                }
+//                if (isset($this->schemas[$annotation->name])) {
+//                    throw new \Exception(sprintf('Schema name "%s" exists.', $annotation->name));
+//                }
                 $this->schemas[$annotation->name] = $annotation;
             }
         }
@@ -387,14 +390,18 @@ class RouteParser
 
     /**
      * @param SWG\Location $location
-     * @param array $annotations
+     * @param array        $annotations
      */
     protected function eachAnnotations($location, $annotations)
     {
         foreach ($annotations as $annotation) {
-            if ($annotation instanceof SWG\Tags) {
+            if ($annotation instanceof SWG\Tag) {
                 $this->eachOperations($location, function ($operation) use ($annotation) {
-                    $operation->tags = $annotation->value;
+                    $operation->tags[] = $annotation->name;
+                });
+            } elseif ($annotation instanceof SWG\Tags) {
+                $this->eachOperations($location, function ($operation) use ($annotation) {
+                    $operation->tags = array_merge($annotation->value, $operation->tags ?? []);
                 });
             } elseif ($annotation instanceof SWG\Response) {
                 $status = $annotation->status ?? 'default';
@@ -411,7 +418,7 @@ class RouteParser
 
     /**
      * @param SWG\Location $location
-     * @param callable $callback
+     * @param callable     $callback
      */
     protected function eachOperations($location, $callback)
     {
@@ -421,5 +428,4 @@ class RouteParser
             }
         }
     }
-
 }

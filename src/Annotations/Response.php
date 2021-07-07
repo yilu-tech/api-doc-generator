@@ -72,4 +72,9 @@ class Response extends Base
         }
         return $ref;
     }
+
+    protected function getRef()
+    {
+        return '#/components/responses/' . parent::getRef();
+    }
 }

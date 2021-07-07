@@ -45,17 +45,21 @@ abstract class Base
             throw new \Exception(sprintf('Class type "%s" error, should be "%s"', get_class($other), static::class));
         }
 
+        $other = clone $other;
+
         foreach ($other as $key => $value) {
             if (isset($value)) {
                 $this->set($key, $value);
             }
         }
+
+        return $other;
     }
 
     public function set($key, $value)
     {
         if ($this->$key instanceof self) {
-            $this->$key->merge($value);
+            $this->$key = $this->$key->merge($value);
         } else {
             $this->$key = $value;
         }
@@ -74,13 +78,18 @@ abstract class Base
         return $value;
     }
 
+    protected function getRef()
+    {
+        return $this->ref;
+    }
+
     public function toArray()
     {
         if ($this->ref) {
-            return ['$ref' => $this->ref];
+            return ['$ref' => $this->getRef()];
         }
 
-        $values = [];
+        $values  = [];
         $excepts = array_merge($this->excepts, ['excepts', 'ref', 'valueKey']);
 
         foreach ($this as $key => $value) {
