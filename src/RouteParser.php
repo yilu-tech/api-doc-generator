@@ -294,8 +294,8 @@ class RouteParser
 
     protected function getOperation($route, $annotations, $method, $parameters, $body)
     {
-        $operation = Arr::first($annotations, function ($item) use ($method) {
-                return $item instanceof SWG\Operation && $item->method === $method;
+        $operation = Arr::first($annotations, function ($item) {
+                return $item instanceof SWG\Operation;
             }) ?? new SWG\Operation();
 
         $operation->method = $method;
