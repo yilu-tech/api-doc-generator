@@ -3,8 +3,8 @@
     "description": "Generate laravel api doc.",
     "authors": [
         {
-            "name": "yj",
-            "email": "yanjun@yilu-tech.com"
+            "name": "yilu",
+            "email": "developer@yilu.co"
         }
     ],
     "require": {
